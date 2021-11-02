@@ -1,0 +1,12 @@
+.main-div {
+    width: 30%;
+    padding: 2.5%;
+    padding-top: 1.5%;
+    float: left;
+}
+
+svg {
+    float: right;
+    padding-right:  auto;
+    padding-left: auto;
+}
