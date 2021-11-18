@@ -45,9 +45,9 @@ export const GearForm = ({onFormChange, initModule}) => {
         var newGearDimensions;
         try {
             if (gearType === gearTypes[0].value && pinionOrWheel === selectPinionOrWheel[0].value){
-                newGearDimensions = GetGearDimensions.GetEpicyclicWheelDimensions(pinionNumber);
+                newGearDimensions = GetGearDimensions.GetEpicyclicWheelDimensions(pinionNumber, gearRatio);
             } else if (gearType === gearTypes[0].value && pinionOrWheel === selectPinionOrWheel[1].value) {
-                newGearDimensions = GetGearDimensions.GetEpicyclicPinionDimensions(pinionNumber,gearRatio, module);
+                newGearDimensions = GetGearDimensions.GetEpicyclicPinionDimensions(pinionNumber);
             } else if (gearType === gearTypes[1].value) {
                 newGearDimensions = GetGearDimensions.GetCycloidalGearDimensions(teethNumber);
             }

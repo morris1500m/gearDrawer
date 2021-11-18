@@ -94,7 +94,7 @@ import { GearDataRow } from './GearDataRow'
         return [z3, z4, z5, z6, z6_5, z7, z7_5, z8, z8_5, z9, z9_5, z10, z11, z12];
     }
 
-    static GetEpicyclicPinionDimensions(pinionNumber: number, gearRatio: number, gearModule: number) {
+    static GetEpicyclicWheelDimensions(pinionNumber: number, gearRatio: number) {
         var s= 1.57;
         var hf= 1.57;
         var gearData = this.GetEpicyclicGearData();
@@ -125,7 +125,7 @@ import { GearDataRow } from './GearDataRow'
         }
     }
 
-    static GetEpicyclicWheelDimensions(teethNumber: number){
+    static GetEpicyclicPinionDimensions(teethNumber: number){
         var s;
         if (teethNumber > 10){
             s= 1.25;
