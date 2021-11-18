@@ -21,7 +21,7 @@ const StyledForm = styled.form`
     float: left;
 `;
  
-export const GearForm = ({onFormChange, initModule}) => {
+export const GearForm = ({onFormChange, onDownloadButtonClick, initModule}) => {
     // Select Objects
     const gearTypes = [{text:"Epicycloidal (going train)", value:"epicycloidal"}, {text:"Cycloidal (winding, hand setting etc.)", value:"cycloidal"}];
     const selectPinionOrWheel = [{text:"Wheel", value:"wheel"}, {text:"Pinion", value:"pinion"}];
@@ -99,6 +99,22 @@ export const GearForm = ({onFormChange, initModule}) => {
         }
     }
 
+    const GetFileName = () =>{
+        const mod = module.toString().replaceAll(".", "_");
+
+        if (gearType === gearTypes[0].value && pinionOrWheel === selectPinionOrWheel[0].value){
+            // EpicyclicWheel
+            return gearType + "_wheel_gearModule" + mod + "teethNum" + (pinionNumber*gearRatio);
+        } else if (gearType === gearTypes[0].value && pinionOrWheel === selectPinionOrWheel[1].value) {
+            // EpicyclicPinion
+            return gearType + "_pinion_gearModule" + mod + "teethNum" + pinionNumber;
+        } else if (gearType === gearTypes[1].value) {
+            // CycloidalWheel
+            var pinionOrWheelString= teethNumber>=16 ? "wheel" : "pinion";
+            return gearType + "_" + pinionOrWheelString + "_gearModule" + mod + "teethNum" + teethNumber; 
+        }
+    }
+
     return (
     <>  
         <StyledForm>
@@ -106,6 +122,8 @@ export const GearForm = ({onFormChange, initModule}) => {
             <StyledTextField  id="module" label="module" onChange={(e) => setModule(e.target.value)} />
 			<Dropdown onChange ={(e) => setGearType(e)} id="gear-type" label="Choose a gear type:" currentSelection={gearType} options={gearTypes} />
             {GetForm()}
+            <Button variant="contained" onClick={() => {onDownloadButtonClick(GetFileName())}}>Download Gear SVG</Button>
+            <p>{errorMessage}</p>
         </StyledForm>
         {/*
         <p>Gear type: {gearType}</p>

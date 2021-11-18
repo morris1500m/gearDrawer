@@ -12,6 +12,8 @@ export default class DrawGear {
         var pitchRadius= (gearDimensions.teethNumber * module)/2;
         var dendeumRadius = pitchRadius - gearDimensions.dedendumDepth * module ;
         var andendumRadius = pitchRadius + gearDimensions.addendumHeight * module;
+
+        const viewBoxSize = (andendumRadius * 2) * 1.2;
     
         var angleBetweenTeeth = 2* Math.PI / gearDimensions.teethNumber;
         var toothThickness = module*gearDimensions.toothThickness;
@@ -48,7 +50,7 @@ export default class DrawGear {
         var listOfArcs: Arc[]=[];
         var listOfLines: Line[]=[];
 
-        const CentrePoint: Point = new Point(150, 150);
+        const CentrePoint: Point = new Point(viewBoxSize/2, viewBoxSize/2);
 
         for (let i = 0; i < gearDimensions.teethNumber; i++){
             // Find angle of centreline of tooth in radians
@@ -68,7 +70,7 @@ export default class DrawGear {
             listOfLines.push(new Line(rightToothDendeumPoint.AddPoint(CentrePoint), leftToothPitchCirclePoint.AddPoint(CentrePoint)));
             listOfLines.push(new Line(leftToothDendeumPoint.AddPoint(CentrePoint), rightToothPitchCirclePoint.AddPoint(CentrePoint)));
         }
-        return new Gear(listOfArcs, listOfLines);
+        return new Gear(listOfArcs, listOfLines, viewBoxSize);
     }
 }
 
