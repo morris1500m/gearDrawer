@@ -1,8 +1,6 @@
 import DrawGear from "./classes/GearDrawing/DrawGear";
 import * as d3Shape from 'd3-shape';
 import styled from 'styled-components';
-import React from "react";
-import { Button } from "@material-ui/core";
 
 const Wrapper = styled.div`
     width: 60%;
@@ -44,7 +42,7 @@ export const GearSvg = ({gearDimensions, module, svgRef}) => {
     <Wrapper>
         <h1>SVG</h1>
         <StyledSvg viewBox={"0 0 "+viewBoxSize+" "+viewBoxSize} ref={svgRef} xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
-            <rect width={viewBoxSize} height={viewBoxSize} fill='#8a89a6' stroke="black" stroke-width={strokeWidth} />
+            {/*<rect width={viewBoxSize} height={viewBoxSize} fill='#8a89a6' stroke="black" stroke-width={strokeWidth} />*/}
             {gear?.lines.map(line => (
                 <>
                     <line x1={line.startPoint.x} y1={line.startPoint.y} x2={line.endPoint.x} y2={line.endPoint.y} stroke="black" stroke-width={strokeWidth} stroke-linecap="round" />

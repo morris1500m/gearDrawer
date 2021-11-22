@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {Dropdown} from "./form-components/Dropdown"
-import {Button, TextField} from "@material-ui/core";
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 import GetGearDimensions from "./classes/GearPropeties/GetGearDimensions";
 import styled from 'styled-components';
 

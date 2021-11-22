@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import {Select} from "@material-ui/core"
+import Select from '@mui/material/Select';
 import styled from 'styled-components';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
 
 const StyledSelect = styled(Select)`
     width: 100%;
@@ -17,7 +19,7 @@ export const Dropdown = ( {onChange, id, label, currentSelection, options} ) => 
 
     return (
         <>
-            <label htmlFor={id}>{label}</label>
+            <InputLabel htmlFor={id}>{label}</InputLabel>
             <StyledSelect
             value={selectedOption}
             id={id}
@@ -26,7 +28,7 @@ export const Dropdown = ( {onChange, id, label, currentSelection, options} ) => 
                 onChange(e.target.value);
             }}>
             {options.map(o => (
-                <option key={o.value} value={o.value}>{o.text}</option>
+                <MenuItem key={o.value} value={o.value}>{o.text}</MenuItem>
             ))}
             </StyledSelect>
         </>
