@@ -1,9 +1,6 @@
 import { GearDimensions } from "../GearPropeties/GearDimensions";
 import Point from "./Point";
 import DrawGearHelpers from "./DrawGearHelpers"
-import Arc from "./Arc"
-import Line from "./Line"
-import Gear from "./Gear";
 
 export default class DrawGear {
 
@@ -12,13 +9,10 @@ export default class DrawGear {
         var pitchRadius= (gearDimensions.teethNumber * module)/2;
         var dendeumRadius = pitchRadius - gearDimensions.dedendumDepth * module ;
         var andendumRadius = pitchRadius + gearDimensions.addendumHeight * module;
-
-        const viewBoxSize = (andendumRadius * 2) * 1.2;
     
         var angleBetweenTeeth = 2* Math.PI / gearDimensions.teethNumber;
         var toothThickness = module*gearDimensions.toothThickness;
         var radiusOfAdendum = gearDimensions.addendumRadius*module;
-        var originPoint = new Point(0,0);
     
         // Shift first tooth to top  
         var thetaOrigin =  Math.PI;  
@@ -47,10 +41,7 @@ export default class DrawGear {
         var startDendumAngleOrigin = angleBetweenToothFlankAndCentreLine;
         var endDendumAngleOrigin = angleBetweenTeeth - angleBetweenToothFlankAndCentreLine;
 
-        var listOfArcs: Arc[]=[];
-        var listOfLines: Line[]=[];
-
-        const CentrePoint: Point = new Point(viewBoxSize/2, viewBoxSize/2);
+        var paths = [];
 
         for (let i = 0; i < gearDimensions.teethNumber; i++) {  
             // Find angle of centreline of tooth in radians
@@ -66,8 +57,10 @@ export default class DrawGear {
             var startAngle4 = -1*(startAdendumAngleOrigin + theta) - Math.PI/2;
             var endAngle4 = -1*(endAdendumAngleOrigin + theta) - Math.PI/2;
 
-            listOfArcs.push(new Arc(radiusOfAdendum, centreOfAndendumLeft.AddPoint(CentrePoint), startAngle3, endAngle3));
-            listOfArcs.push(new Arc(radiusOfAdendum, DrawGearHelpers.mirrorPointX(centreOfAndendumLeft).AddPoint(CentrePoint), startAngle4, endAngle4));
+            const mirrorCentreOfAndendumLeft: Point = DrawGearHelpers.mirrorPointX(centreOfAndendumLeft);
+
+            const makerArc1 = {type: 'arc', origin: [centreOfAndendumLeft.x, centreOfAndendumLeft.y],radius: radiusOfAdendum,startAngle: this.toDegrees(startAngle3),endAngle: this.toDegrees(endAngle3)}
+            const makerArc2 = {type: 'arc', origin: [mirrorCentreOfAndendumLeft.x, mirrorCentreOfAndendumLeft.y],radius: radiusOfAdendum,startAngle: this.toDegrees(startAngle4),endAngle: this.toDegrees(endAngle4)}
 
             var startAngle1 = startDendumAngleOrigin + theta - Math.PI/2;
             var endAngle1 = endDendumAngleOrigin+ theta - Math.PI/2;
@@ -75,15 +68,26 @@ export default class DrawGear {
             var startAngle2 = -1*endDendumAngleOrigin+ theta - Math.PI/2;
             var endAngle2 = -1*startDendumAngleOrigin+ theta - Math.PI/2;
 
-            listOfArcs.push(new Arc(dendeumRadius, originPoint.AddPoint(CentrePoint), startAngle1, endAngle1));
-            listOfArcs.push(new Arc(dendeumRadius, originPoint.AddPoint(CentrePoint), startAngle2, endAngle2));
+            const makerArc3 = {type: 'arc', origin: [0, 0],radius: dendeumRadius,startAngle: this.toDegrees(startAngle1),endAngle: this.toDegrees(endAngle1)}
+            const makerArc4 = {type: 'arc', origin: [0, 0],radius: dendeumRadius,startAngle: this.toDegrees(startAngle2),endAngle: this.toDegrees(endAngle2)}
 
             var leftToothDendeumPoint = rightToothDendeumPoint.MirrorPointX();
             var rightToothPitchCirclePoint = leftToothPitchCirclePoint.MirrorPointX();
-            
-            listOfLines.push(new Line(rightToothDendeumPoint.AddPoint(CentrePoint), leftToothPitchCirclePoint.AddPoint(CentrePoint)));
-            listOfLines.push(new Line(leftToothDendeumPoint.AddPoint(CentrePoint), rightToothPitchCirclePoint.AddPoint(CentrePoint)));
+
+            const makerLine1 = {type: 'line', origin: [rightToothDendeumPoint.x, rightToothDendeumPoint.y], end: [leftToothPitchCirclePoint.x, leftToothPitchCirclePoint.y] };
+            const makerLine2 = {type: 'line', origin: [leftToothDendeumPoint.x, leftToothDendeumPoint.y], end: [rightToothPitchCirclePoint.x, rightToothPitchCirclePoint.y] };
+
+            paths.push(makerLine1, makerLine2, makerArc1, makerArc2, makerArc3, makerArc4);
         }
-        return new Gear(listOfArcs, listOfLines, viewBoxSize);
+
+        var gear:any = { models: {}, paths: {} };
+
+        paths.forEach((path, index) => { 
+            gear.paths[index] = path; 
+        });
+
+        return gear;
     }
+
+    static toDegrees(angle: number) {return angle * (180/Math.PI);}
 }

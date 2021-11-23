@@ -1,7 +1,5 @@
 import React from "react";
 import { GearForm } from './GearForm';
-import { GearSvg } from './GearSvg';
-import DownloadSvg from "./classes/Download/downloadSvg";
 import { TestMakerJs } from "./TestMakerJs";
 
 function App() {

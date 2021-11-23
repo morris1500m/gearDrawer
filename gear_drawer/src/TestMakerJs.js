@@ -29,32 +29,13 @@ export const TestMakerJs = ({gearDimensions, module}) => {
     }
 
     const gear = getGear();
-    const mag =1;
 
-    var finalModel = { models: {}, paths: {} };
-
-    gear?.lines?.forEach((line, index) => {
-        const makerLine = {
-            type: 'line', 
-            origin: [line.startPoint.x*mag, line.startPoint.y*mag], 
-            end: [line.endPoint.x*mag, line.endPoint.y*mag] };
-        finalModel.paths[index] = makerLine; 
-    });
-
-    gear?.arcs?.forEach((arc, index) => {
-        var startAngle = arc.startAngle * (180/Math.PI);
-        var endAngle = arc.endAngle * (180/Math.PI);
-        const makerArc = {
-            type: 'arc', 
-            origin: [arc.centrePoint.x*mag, arc.centrePoint.y*mag],
-            radius: arc.radius*mag,
-            startAngle: startAngle,
-            endAngle: endAngle
-        }
-        finalModel.paths[index+gear.lines.length] = makerArc; 
-    });
-      
-    var svg = makerjs.exporter.toSVG(finalModel);
+    var svg;
+    if(gear){
+        svg = makerjs.exporter.toSVG(gear);
+    } else {
+        svg = "<p>Loading...</p>"
+    }
 
     return (
     <Wrapper>
