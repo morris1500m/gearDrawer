@@ -52,7 +52,7 @@ export default class DrawGear {
 
         const CentrePoint: Point = new Point(viewBoxSize/2, viewBoxSize/2);
 
-        for (let i = 0; i < gearDimensions.teethNumber; i++){
+        for (let i = 0; i < gearDimensions.teethNumber; i++) {  
             // Find angle of centreline of tooth in radians
             var theta = angleBetweenTeeth * i + Math.PI; 
 
@@ -60,24 +60,30 @@ export default class DrawGear {
             var rightToothDendeumPoint = DrawGearHelpers.rotatePoint(rightToothDendeumPointOrigin, theta);
             var leftToothPitchCirclePoint = DrawGearHelpers.rotatePoint(leftToothPitchCirclePointOrigin, theta);
     
-            listOfArcs.push(new Arc(radiusOfAdendum, centreOfAndendumLeft.AddPoint(CentrePoint), startAdendumAngleOrigin + theta, endAdendumAngleOrigin + theta));
-            listOfArcs.push(new Arc(radiusOfAdendum, DrawGearHelpers.mirrorPointX(centreOfAndendumLeft).AddPoint(CentrePoint), -1*startAdendumAngleOrigin - theta, -1*endAdendumAngleOrigin - theta));
-            listOfArcs.push(new Arc(dendeumRadius, originPoint.AddPoint(CentrePoint), endDendumAngleOrigin+ theta, startDendumAngleOrigin+ theta));
-            listOfArcs.push(new Arc(dendeumRadius, originPoint.AddPoint(CentrePoint), -1*endDendumAngleOrigin+ theta, -1*startDendumAngleOrigin+ theta));
+            var startAngle3 = endAdendumAngleOrigin + theta - Math.PI/2;
+            var endAngle3 = startAdendumAngleOrigin + theta - Math.PI/2;
+
+            var startAngle4 = -1*(startAdendumAngleOrigin + theta) - Math.PI/2;
+            var endAngle4 = -1*(endAdendumAngleOrigin + theta) - Math.PI/2;
+
+            listOfArcs.push(new Arc(radiusOfAdendum, centreOfAndendumLeft.AddPoint(CentrePoint), startAngle3, endAngle3));
+            listOfArcs.push(new Arc(radiusOfAdendum, DrawGearHelpers.mirrorPointX(centreOfAndendumLeft).AddPoint(CentrePoint), startAngle4, endAngle4));
+
+            var startAngle1 = startDendumAngleOrigin + theta - Math.PI/2;
+            var endAngle1 = endDendumAngleOrigin+ theta - Math.PI/2;
+
+            var startAngle2 = -1*endDendumAngleOrigin+ theta - Math.PI/2;
+            var endAngle2 = -1*startDendumAngleOrigin+ theta - Math.PI/2;
+
+            listOfArcs.push(new Arc(dendeumRadius, originPoint.AddPoint(CentrePoint), startAngle1, endAngle1));
+            listOfArcs.push(new Arc(dendeumRadius, originPoint.AddPoint(CentrePoint), startAngle2, endAngle2));
 
             var leftToothDendeumPoint = rightToothDendeumPoint.MirrorPointX();
             var rightToothPitchCirclePoint = leftToothPitchCirclePoint.MirrorPointX();
+            
             listOfLines.push(new Line(rightToothDendeumPoint.AddPoint(CentrePoint), leftToothPitchCirclePoint.AddPoint(CentrePoint)));
             listOfLines.push(new Line(leftToothDendeumPoint.AddPoint(CentrePoint), rightToothPitchCirclePoint.AddPoint(CentrePoint)));
         }
         return new Gear(listOfArcs, listOfLines, viewBoxSize);
     }
 }
-
-//this.drawArc(radiusOfAdendum, centreOfAndendumLeft, startAdendumAngleOrigin + theta, endAdendumAngleOrigin + theta); 
-//this.drawArc(radiusOfAdendum, DrawGearHelpers.mirrorPointX(centreOfAndendumLeft), -1*startAdendumAngleOrigin - theta, -1*endAdendumAngleOrigin - theta); 
-//this.drawArc(dendeumRadius, originPoint, endDendumAngleOrigin+ theta, startDendumAngleOrigin+ theta);  
-//this.drawArc(dendeumRadius, originPoint, -1*endDendumAngleOrigin+ theta, -1*startDendumAngleOrigin+ theta);    
-    
-//this.drawLine(rightToothDendeumPoint, leftToothPitchCirclePoint);
-//this.drawLine(DrawGearHelpers.mirrorPointX(rightToothDendeumPoint), DrawGearHelpers.mirrorPointX(leftToothPitchCirclePoint));

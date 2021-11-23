@@ -2,6 +2,7 @@ import React from "react";
 import { GearForm } from './GearForm';
 import { GearSvg } from './GearSvg';
 import DownloadSvg from "./classes/Download/downloadSvg";
+import { TestMakerJs } from "./TestMakerJs";
 
 function App() {
   const [module, setModule] = React.useState(0.2);
@@ -28,14 +29,14 @@ function App() {
   }
 
   const onDownloadButtonClick = (fileName) =>{
-    //alert(fileName +" "+ svgRef.current.outerHTML);
     DownloadButtonClick(fileName, svgRef.current.outerHTML);
   }
 
   return (
     <div className="App">
       <GearForm onFormChange={onFormChange} onDownloadButtonClick={onDownloadButtonClick} initModule={module} />
-      <GearSvg gearDimensions={gearDimensions} module={module} svgRef={svgRef} />
+      {/*<GearSvg gearDimensions={gearDimensions} module={module} svgRef={svgRef} />*/}
+      <TestMakerJs gearDimensions={gearDimensions} module={module} />
     </div>
   );
 }
