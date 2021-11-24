@@ -33,7 +33,6 @@ function App() {
   return (
     <div className="App">
       <GearForm onFormChange={onFormChange} onDownloadButtonClick={onDownloadButtonClick} initModule={module} />
-      {/*<GearSvg gearDimensions={gearDimensions} module={module} svgRef={svgRef} />*/}
       <TestMakerJs gearDimensions={gearDimensions} module={module} />
     </div>
   );
