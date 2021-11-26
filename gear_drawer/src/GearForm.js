@@ -22,7 +22,7 @@ const StyledForm = styled.form`
     float: left;
 `;
  
-export const GearForm = ({onFormChange, onDownloadButtonClick, initModule}) => {
+export const GearForm = ({onFormChange, initModule, dxfString}) => {
     // Select Objects
     const gearTypes = [{text:"Epicycloidal (going train)", value:"epicycloidal"}, {text:"Cycloidal (winding, hand setting etc.)", value:"cycloidal"}];
     const selectPinionOrWheel = [{text:"Wheel", value:"wheel"}, {text:"Pinion", value:"pinion"}];
@@ -123,19 +123,9 @@ export const GearForm = ({onFormChange, onDownloadButtonClick, initModule}) => {
             <StyledTextField  id="module" label="module" onChange={(e) => setModule(e.target.value)} />
 			<Dropdown onChange ={(e) => setGearType(e)} id="gear-type" label="Choose a gear type:" currentSelection={gearType} options={gearTypes} />
             {GetForm()}
-            <Button variant="contained" onClick={() => {onDownloadButtonClick(GetFileName())}}>Download Gear SVG</Button>
+            <Button download={GetFileName()} href={`data:application/octet-stream;base64,${btoa(dxfString)}`} variant="contained">Download DXF</Button>
             <p>{errorMessage}</p>
         </StyledForm>
-        {/*
-        <p>Gear type: {gearType}</p>
-        <p>Module: {module}</p>
-        <p>Pinion or Wheel?: {pinionOrWheel}</p>
-        <p>Teeth number: {teethNumber}</p>
-        <p>Pinion number: {pinionNumber}</p>
-        <p>Gear Ratio: {gearRatio}</p>
-        <p>{JSON.stringify(gearDimensions)}</p>
-        <p>{errorMessage}</p>
-        */}
     </>
     );
 };

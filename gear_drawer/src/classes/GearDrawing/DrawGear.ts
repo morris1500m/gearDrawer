@@ -1,6 +1,7 @@
 import { GearDimensions } from "../GearPropeties/GearDimensions";
 import Point from "./Point";
 import DrawGearHelpers from "./DrawGearHelpers"
+import MakerJs from "makerjs";
 
 export default class DrawGear {
 
@@ -81,6 +82,7 @@ export default class DrawGear {
         }
 
         var gear:any = { models: {}, paths: {} };
+        gear.units = MakerJs.unitType.Millimeter;
 
         paths.forEach((path, index) => { 
             gear.paths[index] = path; 

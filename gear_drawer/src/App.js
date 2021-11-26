@@ -1,39 +1,41 @@
 import React from "react";
 import { GearForm } from './GearForm';
-import { TestMakerJs } from "./TestMakerJs";
+import styled from 'styled-components';
+import makerjs from 'makerjs'
+import parse from 'html-react-parser'
+import DrawGear from './classes/GearDrawing/DrawGear';
+
+const Wrapper = styled.div`
+    width: 60%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    float: right;
+`;
+
+const StyledSvg = styled.svg`
+    width: 60%;
+`;
 
 function App() {
-  const [module, setModule] = React.useState(0.2);
-  const [gearDimensions, setGearDimensions] = React.useState(null);
-  
-  const svgRef = React.useRef();
-  function DownloadButtonClick(fileName, outerHtml) {
-    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
-    var svgBlob = new Blob([preface, outerHtml], {type:"image/svg+xml;charset=utf-8"});
-    var svgUrl = URL.createObjectURL(svgBlob);
-
-    var downloadLink = document.createElement("a");
-    downloadLink.href = svgUrl;
-    downloadLink.download = fileName;
-
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-  }
+  const [gear, setGear] = React.useState(null);
+  const [svg, setSvg] = React.useState("<p>Loading</p>");
+  const [dxf, setDxf] = React.useState(null);
 
   const onFormChange = (change) =>{
-    setModule(change.module);
-    setGearDimensions(change.gear);
-  }
-
-  const onDownloadButtonClick = (fileName) =>{
-    DownloadButtonClick(fileName, svgRef.current.outerHTML);
+    var newGear = DrawGear.drawGear(change.module, change.gear);
+    setGear(newGear);
+    var newSvg = makerjs.exporter.toSVG(newGear);
+    setSvg(newSvg);
+    var newDxf = makerjs.exporter.toDXF(newGear);
+    console.log(newDxf);
+    setDxf(newDxf);
   }
 
   return (
     <div className="App">
-      <GearForm onFormChange={onFormChange} onDownloadButtonClick={onDownloadButtonClick} initModule={module} />
-      <TestMakerJs gearDimensions={gearDimensions} module={module} />
+      <GearForm onFormChange={onFormChange} initModule={module} dxfString={dxf} />
+      <Wrapper>{parse(svg)}</Wrapper>
     </div>
   );
 }
