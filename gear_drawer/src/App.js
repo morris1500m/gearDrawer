@@ -4,10 +4,11 @@ import styled from 'styled-components';
 import makerjs from 'makerjs'
 import parse from 'html-react-parser'
 import DrawGear from './classes/GearDrawing/DrawGear';
+import BasicTabs, { TestTabs } from "./Tabs";
 
 const Wrapper = styled.div`
     width: 60%;
-    padding: 12px 20px;
+    padding: 8px 8px;
     margin: 8px 0;
     display: inline-block;
     float: right;
@@ -28,14 +29,14 @@ function App() {
     var newSvg = makerjs.exporter.toSVG(newGear);
     setSvg(newSvg);
     var newDxf = makerjs.exporter.toDXF(newGear);
-    console.log(newDxf);
     setDxf(newDxf);
   }
 
   return (
     <div className="App">
-      <GearForm onFormChange={onFormChange} initModule={module} dxfString={dxf} />
-      <Wrapper>{parse(svg)}</Wrapper>
+      {/*<GearForm onFormChange={onFormChange} initModule={module} dxfString={dxf} />
+      <Wrapper>{parse(svg)}</Wrapper>*/}
+      <BasicTabs></BasicTabs>
     </div>
   );
 }

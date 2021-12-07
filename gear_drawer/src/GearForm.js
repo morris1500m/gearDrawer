@@ -14,15 +14,8 @@ const StyledTextField = styled(TextField)`
     border-radius: 4px;
     box-sizing: border-box;
 `;
-
-const StyledForm = styled.form`
-    width: 30%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    float: left;
-`;
  
-export const GearForm = ({onFormChange, initModule, dxfString}) => {
+export const GearForm = ({onFormChange, initModule}) => {
     // Select Objects
     const gearTypes = [{text:"Epicycloidal (going train)", value:"epicycloidal"}, {text:"Cycloidal (winding, hand setting etc.)", value:"cycloidal"}];
     const selectPinionOrWheel = [{text:"Wheel", value:"wheel"}, {text:"Pinion", value:"pinion"}];
@@ -40,8 +33,6 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
     const [gearRatio, setGearRatio] = React.useState(availbleEpicyclicGearRatios[0].value);
     const [errorMessage, setErrorMessage] = React.useState("");
 
-    const [gearDimensions, setGearDimensions] = React.useState(null);
-
     useEffect(() => {
         var newGearDimensions;
         try {
@@ -58,7 +49,6 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
 
         if(newGearDimensions) {
             setErrorMessage("");
-            setGearDimensions(newGearDimensions);
             onFormChange({"gear":newGearDimensions, "module":module});
         };
     }, [gearType, pinionOrWheel, module, teethNumber, pinionNumber, gearRatio]);
@@ -99,7 +89,7 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
             return CycloidalWheelForm();
         }
     }
-
+/*
     const GetFileName = () =>{
         const mod = module.toString().replaceAll(".", "_");
 
@@ -115,17 +105,14 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
             return gearType + "_" + pinionOrWheelString + "_gearModule" + mod + "teethNum" + teethNumber; 
         }
     }
-
+*/
     return (
     <>  
-        <StyledForm>
-            <h1>Gear Drawer</h1>
-            <StyledTextField  id="module" label="module" onChange={(e) => setModule(e.target.value)} />
-			<Dropdown onChange ={(e) => setGearType(e)} id="gear-type" label="Choose a gear type:" currentSelection={gearType} options={gearTypes} />
-            {GetForm()}
-            <Button download={GetFileName()} href={`data:application/octet-stream;base64,${btoa(dxfString)}`} variant="contained">Download DXF</Button>
-            <p>{errorMessage}</p>
-        </StyledForm>
+        <h1>Gear Drawer</h1>
+        <StyledTextField  id="module" label="module" defaultValue={module} onChange={(e) => setModule(e.target.value)} />
+		<Dropdown onChange ={(e) => setGearType(e)} id="gear-type" label="Choose a gear type:" currentSelection={gearType} options={gearTypes} />
+        {GetForm()}
+        <p>{errorMessage}</p>
     </>
     );
 };
