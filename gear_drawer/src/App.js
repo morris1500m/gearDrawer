@@ -21,6 +21,7 @@ function App() {
   const [gear, setGear] = React.useState(null);
   const [svg, setSvg] = React.useState("<p>Loading</p>");
   const [dxf, setDxf] = React.useState(null);
+  const module = 0.2;
 
   const onFormChange = (change) =>{
     var newGear = DrawGear.drawGear(change.module, change.gear);
@@ -28,7 +29,6 @@ function App() {
     var newSvg = makerjs.exporter.toSVG(newGear);
     setSvg(newSvg);
     var newDxf = makerjs.exporter.toDXF(newGear);
-    console.log(newDxf);
     setDxf(newDxf);
   }
 

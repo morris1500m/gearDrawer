@@ -40,8 +40,6 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
     const [gearRatio, setGearRatio] = React.useState(availbleEpicyclicGearRatios[0].value);
     const [errorMessage, setErrorMessage] = React.useState("");
 
-    const [gearDimensions, setGearDimensions] = React.useState(null);
-
     useEffect(() => {
         var newGearDimensions;
         try {
@@ -58,7 +56,6 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
 
         if(newGearDimensions) {
             setErrorMessage("");
-            setGearDimensions(newGearDimensions);
             onFormChange({"gear":newGearDimensions, "module":module});
         };
     }, [gearType, pinionOrWheel, module, teethNumber, pinionNumber, gearRatio]);
@@ -85,7 +82,7 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
     const CycloidalWheelForm = () =>{
         return (
             <>
-                <StyledTextField id="wheel-teeth-number" label="wheel-teeth-number" onChange={(e) => setTeethNumber(e.target.value)} />
+                <StyledTextField id="wheel-teeth-number" defaultValue={teethNumber}  label="wheel-teeth-number" onChange={(e) => setTeethNumber(e.target.value)} />
             </>
         )
     }
@@ -120,7 +117,7 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
     <>  
         <StyledForm>
             <h1>Gear Drawer</h1>
-            <StyledTextField  id="module" label="module" onChange={(e) => setModule(e.target.value)} />
+            <StyledTextField  id="module" label="module" defaultValue={module} onChange={(e) => setModule(e.target.value)} />
 			<Dropdown onChange ={(e) => setGearType(e)} id="gear-type" label="Choose a gear type:" currentSelection={gearType} options={gearTypes} />
             {GetForm()}
             <Button download={GetFileName()} href={`data:application/octet-stream;base64,${btoa(dxfString)}`} variant="contained">Download DXF</Button>
