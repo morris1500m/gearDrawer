@@ -54,4 +54,12 @@ export default class DrawGearHelpers {
         var y = point.y * Math.cos(angleRad) + point.x * Math.sin(angleRad);
         return new Point(x,y);
     }
+
+    static movePointByVector(point: Point, magnitude: number, angle: number) {
+        var x = point.x + magnitude * Math.sin(angle);  
+        var y = point.y + magnitude * Math.cos(angle);
+        return new Point(x,y); 
+    }
+
+
 }

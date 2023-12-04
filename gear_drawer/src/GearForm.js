@@ -4,6 +4,10 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import GetGearDimensions from "./classes/GearPropeties/GetGearDimensions";
 import styled from 'styled-components';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
 
 const StyledTextField = styled(TextField)`
     width: 100%;
@@ -33,12 +37,13 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
 
     // State
     const [gearType, setGearType] = React.useState(gearTypes[0].value);
-    const [pinionOrWheel, setPinionOrWheel] = React.useState(selectPinionOrWheel[0].value);
+    const [pinionOrWheel, setPinionOrWheel] = React.useState(selectPinionOrWheel[1].value);
     const [module, setModule] = React.useState(initModule);
     const [teethNumber, setTeethNumber] = React.useState(8);
     const [pinionNumber, setPinionNumber] = React.useState(availbleEpicyclicPinionNumbers[0].value);
     const [gearRatio, setGearRatio] = React.useState(availbleEpicyclicGearRatios[0].value);
     const [errorMessage, setErrorMessage] = React.useState("");
+    const [toothRoot, setToothRoot] = React.useState("round");
 
     useEffect(() => {
         var newGearDimensions;
@@ -56,9 +61,9 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
 
         if(newGearDimensions) {
             setErrorMessage("");
-            onFormChange({"gear":newGearDimensions, "module":module});
+            onFormChange({"gear":newGearDimensions, "module":module, "toothRoot": toothRoot});
         };
-    }, [gearType, pinionOrWheel, module, teethNumber, pinionNumber, gearRatio]);
+    }, [gearType, pinionOrWheel, module, teethNumber, pinionNumber, gearRatio, toothRoot]);
 
     const EpicyclicPinionForm = () =>{
         return (
@@ -118,6 +123,21 @@ export const GearForm = ({onFormChange, initModule, dxfString}) => {
         <StyledForm>
             <h1>Gear Drawer</h1>
             <StyledTextField  id="module" label="module" defaultValue={module} onChange={(e) => setModule(e.target.value)} />
+
+            <FormLabel id="teeth-root-group-label">Teeth Root</FormLabel>
+            
+            <RadioGroup
+                aria-labelledby="teeth-root-group-label"
+                value={toothRoot}
+                name="teeth-root-group"
+                row
+                onChange={(e) => setToothRoot(e.currentTarget.value)}
+            >
+                <FormControlLabel value="square" control={<Radio />} label="Square" />
+                <FormControlLabel value="round" control={<Radio />} label="Round" />
+            </RadioGroup>
+          
+
 			<Dropdown onChange ={(e) => setGearType(e)} id="gear-type" label="Choose a gear type:" currentSelection={gearType} options={gearTypes} />
             {GetForm()}
             <Button download={GetFileName()} href={`data:application/octet-stream;base64,${btoa(dxfString)}`} variant="contained">Download DXF</Button>
