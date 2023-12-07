@@ -26,11 +26,11 @@ function App() {
   const onFormChange = (change) =>{
     console.log(change);
     console.log(change.toothRoot);
-    var newGear = DrawGear.drawGear(change.module, change.gear, change.toothRoot);
-    setGear(newGear);
-    var newSvg = makerjs.exporter.toSVG(newGear);
+    var newGear = new DrawGear(change.module, change.gear, change.toothRoot);
+    setGear(newGear.draw());
+    var newSvg = makerjs.exporter.toSVG(newGear.draw());
     setSvg(newSvg);
-    var newDxf = makerjs.exporter.toDXF(newGear);
+    var newDxf = makerjs.exporter.toDXF(newGear.draw());
     setDxf(newDxf);
   }
 

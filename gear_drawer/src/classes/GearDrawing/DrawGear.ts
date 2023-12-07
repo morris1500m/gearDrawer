@@ -1,184 +1,203 @@
 import { GearDimensions } from "../GearPropeties/GearDimensions";
 import Point from "./Point";
-import DrawGearHelpers from "./DrawGearHelpers"
 import MakerJs from "makerjs";
 
 export default class DrawGear {
 
-    static drawGear(module: number, gearDimensions: GearDimensions, toothRoot: string) {
-        //console.log(toothRoot);
+    module: number;
+    gearDimensions: GearDimensions;
+    toothRoot: string;
 
-        //Create line element inside SVG
-        var pitchRadius= (gearDimensions.teethNumber * module)/2;
-        var dendeumRadius = pitchRadius - gearDimensions.dedendumDepth * module;
-        var andendumRadius = pitchRadius + gearDimensions.addendumHeight * module;
+    get pitchRadius() {return (this.gearDimensions.teethNumber * this.module)/2};
+    get dendeumRadius() {return this.pitchRadius - this.gearDimensions.dedendumDepth * this.module};
+    get andendumRadius() {return this.pitchRadius + this.gearDimensions.addendumHeight * this.module};
 
-        console.log("PitchRadius= "+pitchRadius);
-        console.log("DendeumRadius= "+dendeumRadius);
-        console.log("AndendumRadius= "+andendumRadius);
+    get angleBetweenTeeth() {return 2* Math.PI / this.gearDimensions.teethNumber};
+    get toothThickness() {return this.module*this.gearDimensions.toothThickness};
+    get radiusOfAdendum() {return this.gearDimensions.addendumRadius*this.module};
+
+    // Find point of tooth tip
+    get toothTipPointOrigin() {return DrawGear.pointFromRadius(this.andendumRadius, this.thetaOrigin)};
+    // Find intersection of max tooth thickness and pitch radius
+    get angleBetweenToothFlankAndCentreLine() {return Math.asin((this.toothThickness/2)/this.pitchRadius)};
+
+    get leftToothPitchCirclePointOrigin() {return DrawGear.pointFromRadius(this.pitchRadius, this.thetaOrigin + this.angleBetweenToothFlankAndCentreLine)};
+    // Find intersection of dendeum & root 
+    get rightToothDendeumPointOrigin() {return DrawGear.pointFromRadius(this.dendeumRadius, this.thetaOrigin + this.angleBetweenToothFlankAndCentreLine)}; 
+
+    // Find centre of andendum radius  
+    get centreOfAndendumLeftOrigin() {return DrawGear.findCentrePointOfArc(this.radiusOfAdendum, this.leftToothPitchCirclePointOrigin, this.toothTipPointOrigin)};  
+    get topOfArc() {return DrawGear.addPoints(this.centreOfAndendumLeftOrigin, new Point(0, -this.radiusOfAdendum))};
+
+    // angle between top of circle and tooth tip
+    get toothTipAngleOffsetOrigin() {return DrawGear.getAngleBetweenToPointsOnCircle(this.topOfArc, this.toothTipPointOrigin, this.radiusOfAdendum)};
+    // angle between tooth tip and intersection of max tooth thickness and pitch radius
+    get toothTipAngleAndendumOrigin() {return DrawGear.getAngleBetweenToPointsOnCircle(this.toothTipPointOrigin, this.leftToothPitchCirclePointOrigin, this.radiusOfAdendum)}; 
+
+    get startAdendumAngleOrigin() {return -this.toothTipAngleOffsetOrigin};
+    get endAdendumAngleOrigin() {return this.startAdendumAngleOrigin-this.toothTipAngleAndendumOrigin};
     
-        var angleBetweenTeeth = 2* Math.PI / gearDimensions.teethNumber;
-        var toothThickness = module*gearDimensions.toothThickness;
-        var radiusOfAdendum = gearDimensions.addendumRadius*module;
+    get startDendumAngleOrigin() {return this.angleBetweenToothFlankAndCentreLine};
+    get endDendumAngleOrigin() {return this.angleBetweenTeeth - this.angleBetweenToothFlankAndCentreLine};
+
+    // Shift first tooth to top  
+    thetaOrigin =  Math.PI; 
+
+    constructor(module: number, gearDimensions: GearDimensions, toothRoot: string) {
+        this.module = module;
+        this.gearDimensions = gearDimensions;
+        this.toothRoot = toothRoot;
+    }
+
+    draw() {
+        var centreOfAndendumLeft = DrawGear.rotatePoint(this.centreOfAndendumLeftOrigin, this.thetaOrigin);   
+        var rightToothDendeumPoint = DrawGear.rotatePoint(this.rightToothDendeumPointOrigin, this.thetaOrigin);
+        var leftToothPitchCirclePoint = DrawGear.rotatePoint(this.leftToothPitchCirclePointOrigin, this.thetaOrigin);
     
-        // Shift first tooth to top  
-        var thetaOrigin =  Math.PI;  
-        // Find point of tooth tip
-        var toothTipPointOrigin = DrawGearHelpers.pointFromRadius(andendumRadius, thetaOrigin);
+        var startAngle3 = this.endAdendumAngleOrigin + this.thetaOrigin - Math.PI/2;
+        var endAngle3 = this.startAdendumAngleOrigin + this.thetaOrigin - Math.PI/2;
+
+        var startAngle2 = -1 * this.endDendumAngleOrigin + this.thetaOrigin - Math.PI/2;
+        var endAngle2 = -1 * this.startDendumAngleOrigin + this.thetaOrigin - Math.PI/2;
+
+        var toothRootRadius = DrawGear.calculateRootToothRadius(this.dendeumRadius, this.angleBetweenTeeth, this.angleBetweenToothFlankAndCentreLine);
+
+        var toothRootRadiusFromCentre = this.dendeumRadius + toothRootRadius;
+        var toothRootRadiusCentre = DrawGear.pointFromRadius(toothRootRadiusFromCentre, this.angleBetweenTeeth/2);
+
+        var test = DrawGear.calculateAngle(this.angleBetweenToothFlankAndCentreLine, this.angleBetweenTeeth/2, this.dendeumRadius + toothRootRadius);
+
+        var angleTest = Math.asin((leftToothPitchCirclePoint.y - toothRootRadiusCentre.y)/toothRootRadius);
+
+        var rootAngleStart = 180 - DrawGear.toDegrees(test);
+        var rootAngleStart2 = 180 - DrawGear.toDegrees(angleTest) ;
+        // ?????
+        var rootAngleEnd = 270 - DrawGear.toDegrees(test);
+
+        var testtest= DrawGear.movePointByVector(toothRootRadiusCentre, toothRootRadius, -Math.PI/2+ test);
+
+        const rightFlankToToothTip = {type: 'arc', origin: [centreOfAndendumLeft.x, centreOfAndendumLeft.y],radius: this.radiusOfAdendum,startAngle: DrawGear.toDegrees(startAngle3),endAngle: DrawGear.toDegrees(endAngle3)};
+        const rightRootArc = {type: 'arc', origin: [0, 0], radius: this.dendeumRadius, startAngle: DrawGear.toDegrees(startAngle2), endAngle: DrawGear.toDegrees(endAngle2)};
+        const rightFlank = {type: 'line', origin: [rightToothDendeumPoint.x, rightToothDendeumPoint.y], end: [leftToothPitchCirclePoint.x, leftToothPitchCirclePoint.y] };
+
+        const rightRoundFlank = {type: 'line', origin: [testtest.x, testtest.y], end: [leftToothPitchCirclePoint.x, leftToothPitchCirclePoint.y] };
+
+        const rightArc = {type: 'arc', origin: [toothRootRadiusCentre.x, toothRootRadiusCentre.y],radius: toothRootRadius, startAngle: rootAngleStart, endAngle: rootAngleEnd};
+        const rightArc2 = {type: 'arc', origin: [toothRootRadiusCentre.x, toothRootRadiusCentre.y],radius: toothRootRadius, startAngle: rootAngleStart2, endAngle: rootAngleEnd};
         
-        // Find intersection of max tooth thickness and pitch radius
-        var angleBetweenToothFlankAndCentreLine = Math.asin((toothThickness/2)/pitchRadius);
-        //console.log("angleBetweenToothFlankAndCentreLine= "+this.toDegrees(angleBetweenToothFlankAndCentreLine));
-        var leftToothPitchCirclePointOrigin = DrawGearHelpers.pointFromRadius(pitchRadius, thetaOrigin + angleBetweenToothFlankAndCentreLine);
-    
-        // Find intersection of dendeum & root 
-        var rightToothDendeumPointOrigin = DrawGearHelpers.pointFromRadius(dendeumRadius, thetaOrigin + angleBetweenToothFlankAndCentreLine);  
-    
-        // Find centre of andendum radius  
-        var centreOfAndendumLeftOrigin = DrawGearHelpers.findCentrePointOfArc(radiusOfAdendum, leftToothPitchCirclePointOrigin, toothTipPointOrigin);  
-        var topOfArc = DrawGearHelpers.addPoints(centreOfAndendumLeftOrigin, new Point(0, -radiusOfAdendum));
-    
-        // angle between top of circle and tooth tip
-        var toothTipAngleOffsetOrigin = DrawGearHelpers.getAngleBetweenToPointsOnCircle(topOfArc, toothTipPointOrigin, radiusOfAdendum);
-        // angle between tooth tip and intersection of max tooth thickness and pitch radius
-        var toothTipAngleAndendumOrigin = DrawGearHelpers.getAngleBetweenToPointsOnCircle(toothTipPointOrigin, leftToothPitchCirclePointOrigin, radiusOfAdendum); 
-    
-        var startAdendumAngleOrigin = -toothTipAngleOffsetOrigin;
-        var endAdendumAngleOrigin = startAdendumAngleOrigin-toothTipAngleAndendumOrigin;
-    
-        var startDendumAngleOrigin = angleBetweenToothFlankAndCentreLine;
-        var endDendumAngleOrigin = angleBetweenTeeth - angleBetweenToothFlankAndCentreLine;
-
-        var paths = [];
-
-        //for (let i = 0; i < gearDimensions.teethNumber; i++) {  
-            for (let i = 0; i < 1; i++) {  
-            // Find angle of centreline of tooth in radians
-            var theta = angleBetweenTeeth * i + Math.PI; 
-
-            var centreOfAndendumLeft = DrawGearHelpers.rotatePoint(centreOfAndendumLeftOrigin, theta);   
-            var rightToothDendeumPoint = DrawGearHelpers.rotatePoint(rightToothDendeumPointOrigin, theta);
-            var leftToothPitchCirclePoint = DrawGearHelpers.rotatePoint(leftToothPitchCirclePointOrigin, theta);
-    
-            var startAngle3 = endAdendumAngleOrigin + theta - Math.PI/2;
-            console.log("startAngle3= "+this.toDegrees(startAngle3));
-            var endAngle3 = startAdendumAngleOrigin + theta - Math.PI/2;
-            console.log("endAngle3= "+this.toDegrees(endAngle3));
-
-            var startAngle4 = -1 * (startAdendumAngleOrigin + theta) - Math.PI/2;
-            console.log("startAngle4= "+this.toDegrees(startAngle4));
-            var endAngle4 = -1 * (endAdendumAngleOrigin + theta) - Math.PI/2;
-            console.log("endAngle4= "+this.toDegrees(endAngle4));
-
-            const mirrorCentreOfAndendumLeft: Point = DrawGearHelpers.mirrorPointX(centreOfAndendumLeft);
-
-            const rightFlankToToothTip = {type: 'arc', origin: [centreOfAndendumLeft.x, centreOfAndendumLeft.y],radius: radiusOfAdendum,startAngle: this.toDegrees(startAngle3),endAngle: this.toDegrees(endAngle3)}
-            const leftFlankToToothTip = {type: 'arc', origin: [mirrorCentreOfAndendumLeft.x, mirrorCentreOfAndendumLeft.y],radius: radiusOfAdendum,startAngle: this.toDegrees(startAngle4),endAngle: this.toDegrees(endAngle4)}
-
-            var startAngle1 = startDendumAngleOrigin + theta - Math.PI/2;
-            console.log("startAngle1= "+this.toDegrees(startAngle1));
-            var endAngle1 = endDendumAngleOrigin + theta - Math.PI/2;
-            console.log("endAngle1= "+this.toDegrees(endAngle1));
-
-            var startAngle2 = -1 * endDendumAngleOrigin + theta - Math.PI/2;
-            console.log("startAngle2= "+this.toDegrees(startAngle2));
-            var endAngle2 = -1 * startDendumAngleOrigin + theta - Math.PI/2;
-            console.log("endAngle2= "+this.toDegrees(endAngle2));
-
-            const leftRootArc = {type: 'arc', origin: [0, 0], radius: dendeumRadius, startAngle: this.toDegrees(startAngle1), endAngle: this.toDegrees(endAngle1)}
-            const rightRootArc = {type: 'arc', origin: [0, 0], radius: dendeumRadius, startAngle: this.toDegrees(startAngle2), endAngle: this.toDegrees(endAngle2)}
-
-            var leftToothDendeumPoint = rightToothDendeumPoint.MirrorPointX();
-            var rightToothPitchCirclePoint = leftToothPitchCirclePoint.MirrorPointX();
-
-            const rightFlank = {type: 'line', origin: [rightToothDendeumPoint.x, rightToothDendeumPoint.y], end: [leftToothPitchCirclePoint.x, leftToothPitchCirclePoint.y] };
-            const leftFlank = {type: 'line', origin: [leftToothDendeumPoint.x, leftToothDendeumPoint.y], end: [rightToothPitchCirclePoint.x, rightToothPitchCirclePoint.y] };
-
-            var toothRootToNextTooth = angleBetweenTeeth/2-angleBetweenToothFlankAndCentreLine;
-            //console.log("toothRootToNextTooth= "+ this.toDegrees(toothRootToNextTooth));
-            var toothRootRadius = (dendeumRadius * (Math.sin(toothRootToNextTooth))/(1-Math.sin(toothRootToNextTooth)));
-            console.log("toothRootRadius= "+ toothRootRadius);
-
-            console.log("angleBetweenToothFlankAndCentreLine= "+ this.toDegrees(angleBetweenToothFlankAndCentreLine));
-            console.log("theta= "+ theta);
-            
-
-            var toothRootRadiusFromCentre = dendeumRadius + toothRootRadius;
-
-            var bvcbcvbc = DrawGearHelpers.pointFromRadius(toothRootRadiusFromCentre, angleBetweenTeeth/2);
-            console.log("bvcbcvbc= "+JSON.stringify(bvcbcvbc));
-            console.log("theta= "+ this.toDegrees(theta));
-            var toothRootRadiusCentre = DrawGearHelpers.pointFromRadius(toothRootRadiusFromCentre, angleBetweenTeeth/2);
-            console.log("toothRootRadiusCentre= "+JSON.stringify(toothRootRadiusCentre));
-            var toothRoodRadiusLeftCentre = DrawGearHelpers.mirrorPointX(toothRootRadiusCentre);
-            //const testArc = {type: 'arc', origin: [toothRootRadiusCentre.x, toothRootRadiusCentre.y],radius: toothRootRadius, startAngle: 0, endAngle: 360};
-
-            //const point = {type: 'circle', origin: [test68.x, test68.y], radius: 1};
-            const point2 = {type: 'circle', origin: [toothRootRadiusCentre.x, toothRootRadiusCentre.y], radius: 1};
-
-            var test = this.calculateAngle(angleBetweenToothFlankAndCentreLine, angleBetweenTeeth/2, dendeumRadius + toothRootRadius);
-
-            var rootAngleStart = 180 - this.toDegrees(test);
-            var rootAngleEnd = 180 + this.toDegrees(angleBetweenTeeth);
-
-            var testtest= DrawGearHelpers.movePointByVector(toothRootRadiusCentre, toothRootRadius, -Math.PI/2+ test);
-            const point3 = {type: 'circle', origin: [testtest.x, testtest.y], radius: 1};
-
-            var test67 = DrawGearHelpers.rotatePoint(DrawGearHelpers.movePointByVector(rightToothDendeumPointOrigin,-toothRootRadius,angleBetweenToothFlankAndCentreLine), theta);
-            var test68 = DrawGearHelpers.mirrorPointX(test67);
-            const testFlank = {type: 'line', origin: [testtest.x, testtest.y], end: [leftToothPitchCirclePoint.x, leftToothPitchCirclePoint.y] };
-            const leftFlankRound = {type: 'line', origin: [test68.x, test68.y], end: [rightToothPitchCirclePoint.x, rightToothPitchCirclePoint.y] };
-
-            console.log("rootAngleStart= " + rootAngleStart);
-            console.log("rootAngleEnd= " + rootAngleEnd);
-
-            const testArc = {type: 'arc', origin: [toothRootRadiusCentre.x, toothRootRadiusCentre.y],radius: toothRootRadius, startAngle: rootAngleStart, endAngle: rootAngleEnd};
-            const testLeftArc = {type: 'arc', origin: [toothRoodRadiusLeftCentre.x, toothRoodRadiusLeftCentre.y],radius: toothRootRadius, startAngle: 270+this.toDegrees(angleBetweenTeeth/2 - theta), endAngle: this.toDegrees(angleBetweenTeeth/2 - theta)};
-
-            //paths.push(makerLine1, makerLine2, makerArc1, makerArc2, makerArc3, makerArc4);
-            if (toothRoot === "square") {
-                paths.push(leftFlank, leftFlankToToothTip, leftRootArc, rightFlank, rightFlankToToothTip, rightRootArc);
-            } else {
-                paths.push(leftFlankToToothTip, testArc, rightFlankToToothTip, testLeftArc, leftFlankRound, testFlank, point2, rightRootArc, leftRootArc, point3);
-            }
-        }
+        const leftFlankToToothTip = MakerJs.path.mirror(rightFlankToToothTip, true, false);
+        const leftRootArc = MakerJs.path.mirror(rightRootArc, true, false);
+        const leftRootArc2 = MakerJs.path.mirror(rightRootArc, true, false);
+        const leftFlank = MakerJs.path.mirror(rightFlank, true, false);
+        
+        const leftRoundFlank = MakerJs.path.mirror(rightRoundFlank, true, false);
+        const leftArc = MakerJs.path.mirror(rightArc, true, false);
+        const leftArc2 = MakerJs.path.mirror(rightArc2, true, false);
 
         var gear:any = { models: {}, paths: {} };
         gear.units = MakerJs.unitType.Millimeter;
-
-        paths.forEach((path, index) => { 
-            gear.paths[index] = path; 
-        });
+        
+        for (var i = 0; i < this.gearDimensions.teethNumber; i++ ) {
+            var pathObject: any;
+            if (this.toothRoot === "square") {
+                pathObject = {rightFlank, rightFlankToToothTip, rightRootArc,  leftFlank, leftFlankToToothTip, leftRootArc };
+            } else  {
+                if (this.pitchRadius <= toothRootRadiusFromCentre) {
+                    pathObject = {rightArc2, rightFlankToToothTip, leftArc2, leftFlankToToothTip};
+                } else {
+                    pathObject = {rightArc, rightFlankToToothTip, rightRoundFlank, leftArc, leftFlankToToothTip, leftRoundFlank};
+                }
+            }
+            var model = { paths: pathObject };
+            var clone = MakerJs.cloneObject(model);
+            var a = 360 / this.gearDimensions.teethNumber;
+            MakerJs.model.rotate(clone, a * i, [0, 0]);
+            gear.models[i] = clone;
+        }
 
         return gear;
     }
 
+    static calculateRootToothRadius(dendeumRadius: number, angleBetweenTeeth: number, angleBetweenToothFlankAndCentreLine: number) {
+        var toothRootToNextTooth = angleBetweenTeeth/2-angleBetweenToothFlankAndCentreLine;
+        return (dendeumRadius * (Math.sin(toothRootToNextTooth))/(1-Math.sin(toothRootToNextTooth)));
+    }
+
     static calculateAngle(angleToFlank: number, angleToCentreline: number, radius: number) {
-        console.log("radius= "+ radius);
-        console.log("angleToFlankt= "+ this.toDegrees(angleToFlank));
-        console.log("angleToCentreline= "+ this.toDegrees(angleToCentreline));
         var angle2 = Math.PI / 2 -angleToCentreline;
         var x1 = radius * Math.sin(angle2);
-        console.log("x1= " + x1);
         var y1 = radius * Math.cos(angle2);
-        console.log("y1= " + y1);
 
         var angle = Math.PI / 2 - angleToFlank;
         var x2 = radius * Math.sin(angle);
-        console.log("x2= " + x2);
         var y2 = radius * Math.cos(angle);
-        console.log("y2= " + y2);
 
         var yo = y1 - y2;
-        console.log("yo= " + yo);
         var xa = x2 - x1;
-        console.log("xa= " + xa);
          
         var result = Math.atan(xa/yo);
-        console.log("angle result= "+ this.toDegrees(result));
-
         return result;
     }
 
     static toDegrees(angle: number) {return angle * (180/Math.PI);}
+
+    static pointFromRadius(radius: number, angle: number){
+        var x = radius * Math.sin(angle);  
+        var y = radius * Math.cos(angle);
+        return new Point(x,y); 
+    }
+
+    static addPoints(point1: Point, point2: Point) {
+        return new Point(point1.x+point2.x, point1.y+point2.y);
+    }
+
+    static mirrorPointX(point: Point){
+        return new Point(point.x*-1, point.y);
+    }
+
+    static findCentrePointOfArc(radius: number, start: Point, end: Point, clockwise = true){
+        var distance = Math.sqrt(Math.pow((start.x-end.x), 2)+Math.pow((start.y-end.y),2));
+    
+        var firstTermX= (start.x + end.x)/2;
+        var firstTermY= (start.y + end.y)/2;
+    
+        var secondTermX= (start.y - end.y)/2;
+        var secondTermY= (start.x - end.x)/2;
+    
+        var thirdTerm=Math.sqrt(Math.pow(((2*radius)/distance),2)-1);
+    
+        var x;
+        var y;
+    
+        if (clockwise) {
+            x= firstTermX + secondTermX * thirdTerm;
+            y= firstTermY - secondTermY * thirdTerm;
+        } else {
+            x= firstTermX - secondTermX * thirdTerm;
+            y= firstTermY + secondTermY * thirdTerm;
+        }
+    
+        return new Point(x,y);
+    }
+
+    static calcChordLength(point1: Point, point2: Point){
+        return Math.sqrt(Math.pow((point1.x-point2.x), 2)+Math.pow((point1.y-point2.y),2));
+    }
+
+    static getAngleBetweenToPointsOnCircle(point1: Point, point2: Point, radius: number){
+        var chordLength = this.calcChordLength(point1, point2);
+        return 2* Math.asin(chordLength/(2*radius));
+    }
+
+    static rotatePoint(point: Point, angleRad: number){
+        var x = point.x * Math.cos(angleRad) - point.y * Math.sin(angleRad);
+        var y = point.y * Math.cos(angleRad) + point.x * Math.sin(angleRad);
+        return new Point(x,y);
+    }
+
+    static movePointByVector(point: Point, magnitude: number, angle: number) {
+        var x = point.x + magnitude * Math.sin(angle);  
+        var y = point.y + magnitude * Math.cos(angle);
+        return new Point(x,y); 
+    }
 }
