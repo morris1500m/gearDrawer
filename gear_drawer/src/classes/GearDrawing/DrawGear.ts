@@ -87,7 +87,6 @@ export default class DrawGear {
         
         const leftFlankToToothTip = MakerJs.path.mirror(rightFlankToToothTip, true, false);
         const leftRootArc = MakerJs.path.mirror(rightRootArc, true, false);
-        const leftRootArc2 = MakerJs.path.mirror(rightRootArc, true, false);
         const leftFlank = MakerJs.path.mirror(rightFlank, true, false);
         
         const leftRoundFlank = MakerJs.path.mirror(rightRoundFlank, true, false);
