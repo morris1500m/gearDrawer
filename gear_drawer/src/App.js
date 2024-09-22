@@ -24,19 +24,17 @@ function App() {
   const module = 19;
 
   const onFormChange = (change) =>{
-    console.log(change);
-    console.log(change.toothRoot);
-    var newGear = new DrawGear(change.module, change.gear, change.toothRoot);
-    setGear(newGear.draw());
-    var newSvg = makerjs.exporter.toSVG(newGear.draw());
+    var newGear = new DrawGear(change.module, change.gear, change.toothRoot, change.spokes);
+    setGear(newGear);
+    var newSvg = makerjs.exporter.toSVG(newGear.draw(), { usePOLYLINE: true });
     setSvg(newSvg);
-    var newDxf = makerjs.exporter.toDXF(newGear.draw());
+    var newDxf = makerjs.exporter.toDXF(newGear.draw(), { usePOLYLINE: true });
     setDxf(newDxf);
   }
 
   return (
     <div className="App">
-      <GearForm onFormChange={onFormChange} initModule={module} dxfString={dxf} />
+      <GearForm onFormChange={onFormChange} initModule={module} dxfString={dxf}  gear={gear} />
       <Wrapper>{parse(svg)}</Wrapper>
     </div>
   );

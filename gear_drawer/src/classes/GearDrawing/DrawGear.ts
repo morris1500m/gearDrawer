@@ -1,16 +1,18 @@
 import { GearDimensions } from "../GearPropeties/GearDimensions";
 import Point from "./Point";
 import MakerJs from "makerjs";
+import SpokeData from "./SpokeData";
 
 export default class DrawGear {
 
     module: number;
     gearDimensions: GearDimensions;
     toothRoot: string;
+    spokes: SpokeData;
 
-    get pitchRadius() {return (this.gearDimensions.teethNumber * this.module)/2};
+    public get pitchRadius() {return (this.gearDimensions.teethNumber * this.module)/2};
     get dendeumRadius() {return this.pitchRadius - this.gearDimensions.dedendumDepth * this.module};
-    get andendumRadius() {return this.pitchRadius + this.gearDimensions.addendumHeight * this.module};
+    public get andendumRadius() {return this.pitchRadius + this.gearDimensions.addendumHeight * this.module};
 
     get angleBetweenTeeth() {return 2* Math.PI / this.gearDimensions.teethNumber};
     get toothThickness() {return this.module*this.gearDimensions.toothThickness};
@@ -43,13 +45,25 @@ export default class DrawGear {
     // Shift first tooth to top  
     thetaOrigin =  Math.PI; 
 
-    constructor(module: number, gearDimensions: GearDimensions, toothRoot: string) {
+    constructor(module: number, gearDimensions: GearDimensions, toothRoot: string, spokes: SpokeData) {
         this.module = module;
         this.gearDimensions = gearDimensions;
         this.toothRoot = toothRoot;
+        this.spokes = spokes;
     }
 
     draw() {
+        var gear:any = { models: {}, paths: {} };
+        gear.units = MakerJs.unitType.Millimeter;
+
+        this.drawGear(gear);
+        this.drawSpokes(gear);
+
+        console.log(gear.models);
+        return gear;
+    }
+
+    drawGear(gear: any) {
         var centreOfAndendumLeft = DrawGear.rotatePoint(this.centreOfAndendumLeftOrigin, this.thetaOrigin);   
         var rightToothDendeumPoint = DrawGear.rotatePoint(this.rightToothDendeumPointOrigin, this.thetaOrigin);
         var leftToothPitchCirclePoint = DrawGear.rotatePoint(this.leftToothPitchCirclePointOrigin, this.thetaOrigin);
@@ -57,8 +71,14 @@ export default class DrawGear {
         var startAngle3 = this.endAdendumAngleOrigin + this.thetaOrigin - Math.PI/2;
         var endAngle3 = this.startAdendumAngleOrigin + this.thetaOrigin - Math.PI/2;
 
+        console.log("end angle 3: "+ DrawGear.toDegrees(endAngle3));
+        console.log("start angle 3: "+ DrawGear.toDegrees(startAngle3));
+
         var startAngle2 = -1 * this.endDendumAngleOrigin + this.thetaOrigin - Math.PI/2;
         var endAngle2 = -1 * this.startDendumAngleOrigin + this.thetaOrigin - Math.PI/2;
+
+        console.log("end angle 2: "+  DrawGear.toDegrees(endAngle2));
+        console.log("start angle 2: "+ DrawGear.toDegrees(startAngle2));
 
         var toothRootRadius = DrawGear.calculateRootToothRadius(this.dendeumRadius, this.angleBetweenTeeth, this.angleBetweenToothFlankAndCentreLine);
 
@@ -93,9 +113,6 @@ export default class DrawGear {
         const leftArc = MakerJs.path.mirror(rightArc, true, false);
         const leftArc2 = MakerJs.path.mirror(rightArc2, true, false);
 
-        var gear:any = { models: {}, paths: {} };
-        gear.units = MakerJs.unitType.Millimeter;
-        
         for (var i = 0; i < this.gearDimensions.teethNumber; i++ ) {
             var pathObject: any;
             if (this.toothRoot === "square") {
@@ -113,8 +130,38 @@ export default class DrawGear {
             MakerJs.model.rotate(clone, a * i, [0, 0]);
             gear.models[i] = clone;
         }
+    }
 
-        return gear;
+    drawSpokes(gear: any) {
+        const spokeSpacing = 2*Math.PI/this.spokes.spokeNumber;
+
+        const outerRimRadius = this.spokes.outerRimRadius * this.dendeumRadius;
+        const innerRimRadius = this.spokes.innerRimRadius * this.dendeumRadius;
+        const spokeThickness = this.spokes.spokeThickness * this.dendeumRadius;
+        
+        const innerRimSpokeAngle = DrawGear.toDegrees(spokeSpacing/2 - Math.asin(spokeThickness/(2*innerRimRadius)) -DrawGear.toRadians(this.spokes.spokeAngle)/2);
+        const outerRimSpokeAngle = DrawGear.toDegrees(spokeSpacing/2 - Math.asin(spokeThickness/(2*outerRimRadius)));
+
+        console.log("innerRimSpokeAngle= "+ innerRimSpokeAngle);
+        console.log("outerRimSpokeAngle= "+ outerRimSpokeAngle);
+
+        const innerRimRadiusRightPoint = DrawGear.pointFromRadius(innerRimRadius, DrawGear.toRadians(innerRimSpokeAngle));
+        const outerRimRadiusRightPoint = DrawGear.pointFromRadius(outerRimRadius, DrawGear.toRadians(outerRimSpokeAngle));
+
+        const outerRim = {type: 'arc', origin: [0, 0],radius: outerRimRadius, startAngle: 90 - outerRimSpokeAngle, endAngle: 90 + outerRimSpokeAngle};
+        const innerRim = {type: 'arc', origin: [0, 0],radius: innerRimRadius, startAngle: 90 - innerRimSpokeAngle, endAngle: 90 + innerRimSpokeAngle};
+        const rightSpoke = {type: 'line', origin: [innerRimRadiusRightPoint.x, innerRimRadiusRightPoint.y], end: [outerRimRadiusRightPoint.x, outerRimRadiusRightPoint.y] };
+        const leftSpoke = MakerJs.path.mirror(rightSpoke, true, false);
+        
+        for (var i = 0; i < this.spokes.spokeNumber; i++ ) {
+            var spokeModel:any = {outerRim, innerRim, rightSpoke, leftSpoke};
+            var model2 = { paths: spokeModel };
+            var clone = MakerJs.cloneObject(model2);
+            var a = 360 / this.spokes.spokeNumber;
+            MakerJs.model.rotate(clone, a * i, [0, 0]);
+            gear.models['spoke'+i] = clone;
+        }
+
     }
 
     static calculateRootToothRadius(dendeumRadius: number, angleBetweenTeeth: number, angleBetweenToothFlankAndCentreLine: number) {
@@ -139,6 +186,8 @@ export default class DrawGear {
     }
 
     static toDegrees(angle: number) {return angle * (180/Math.PI);}
+
+    static toRadians(angle: number) {return angle * (Math.PI/180);}
 
     static pointFromRadius(radius: number, angle: number){
         var x = radius * Math.sin(angle);  

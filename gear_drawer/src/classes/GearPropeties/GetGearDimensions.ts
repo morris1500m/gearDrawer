@@ -125,7 +125,7 @@ import { GearDataRow } from './GearDataRow'
         }
     }
 
-    static GetEpicyclicPinionDimensions(teethNumber: number){
+    static GetEpicyclicPinionDimensions(teethNumber: number, gearRatio: number){
         var s;
         if (teethNumber > 10){
             s= 1.25;
@@ -170,8 +170,11 @@ import { GearDataRow } from './GearDataRow'
         }
 
         if(ha && p){
-            var hf = ha+0.4;
+            var tet= GetGearDimensions.GetEpicyclicWheelDimensions(teethNumber,gearRatio);
+            if (tet != null){
+            var hf = tet.addendumHeight+0.4;
             return new GearDimensions(teethNumber, hf, ha, s, p);
+            }
         }
     }
 }
