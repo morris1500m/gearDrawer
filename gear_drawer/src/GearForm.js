@@ -12,6 +12,10 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Checkbox from '@mui/material/Checkbox';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import DataGridDemo from './TrainTable';
 
 const StyledTextField = styled(TextField)`
     width: 100%;
@@ -29,6 +33,22 @@ const StyledForm = styled.form`
     margin: 8px 0;
     float: left;
 `;
+
+function CustomTabPanel(props) {
+    const { children, value, index, ...other } = props;
+  
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`simple-tabpanel-${index}`}
+        aria-labelledby={`simple-tab-${index}`}
+        {...other}
+      >
+        {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      </div>
+    );
+  }
  
 export const GearForm = ({onFormChange, initModule, dxfString, gear}) => {
     // Select Objects
@@ -58,6 +78,8 @@ export const GearForm = ({onFormChange, initModule, dxfString, gear}) => {
     const [toothRoot, setToothRoot] = React.useState("round");
     const [drawSpokes, setDrawSpokes] = React.useState(false);
     const [spokes, setSpokes] = React.useState(new SpokeData(SpokeType.Rounded, 6, 0.25, 0.85, 0.10));
+
+    const [value, setValue] = React.useState(0);
 
     useEffect(() => {
         var newGearDimensions;
@@ -183,15 +205,36 @@ export const GearForm = ({onFormChange, initModule, dxfString, gear}) => {
         }
     }
 
+    function a11yProps(index) {
+        return {
+          id: `simple-tab-${index}`,
+          'aria-controls': `simple-tabpanel-${index}`,
+        };
+    }
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
+
     return (
     <>  
-        <StyledForm>
-            <h1>Gear Drawer</h1>
-            
+    <StyledForm>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+                <Tab label="Item One" {...a11yProps(0)} />
+                <Tab label="Gear" {...a11yProps(1)} />
+                <Tab label="Spokes" {...a11yProps(2)} />
+                <Tab label="Export" {...a11yProps(3)} />
+            </Tabs>
+        </Box>  
+        <CustomTabPanel value={value} index={0}>
+            <DataGridDemo />
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={1}>
             <StyledTextField  id="module" label="module" defaultValue={module} onChange={(e) => setModule(e.target.value)} />
 
             <FormLabel id="teeth-root-group-label">Teeth Root</FormLabel>
-            
+
             <RadioGroup
                 aria-labelledby="teeth-root-group-label"
                 value={toothRoot}
@@ -202,11 +245,11 @@ export const GearForm = ({onFormChange, initModule, dxfString, gear}) => {
                 <FormControlLabel value="square" control={<Radio />} label="Square" />
                 <FormControlLabel value="round" control={<Radio />} label="Round" />
             </RadioGroup>
-          
 
-			<Dropdown onChange ={(e) => setGearType(e)} id="gear-type" label="Choose a gear type:" currentSelection={gearType} options={gearTypes} />
+            <Dropdown onChange ={(e) => setGearType(e)} id="gear-type" label="Choose a gear type:" currentSelection={gearType} options={gearTypes} />
             {GetForm()}
-
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={2}>
             <FormGroup>
                 <FormControlLabel control={
                     <Checkbox checked={drawSpokes} 
@@ -217,9 +260,11 @@ export const GearForm = ({onFormChange, initModule, dxfString, gear}) => {
             </FormGroup>    
             
             {drawSpokes && (WheelSpokeForm())}
-
+        </CustomTabPanel>  
+        <CustomTabPanel value={value} index={3}>
             <Button download={GetFileName()} href={`data:application/octet-stream;base64,${btoa(dxfString)}`} variant="contained">Download DXF</Button>
-            <p>{errorMessage}</p>
+        </CustomTabPanel>
+        <p>{errorMessage}</p>
             <p>Pitch Diameter: {(gear?.pitchRadius * 2).toFixed(3)}mm</p>
             <p>Outside Diameter: {(gear?.andendumRadius * 2).toFixed(3)}mm</p>
         </StyledForm>
